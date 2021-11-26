@@ -45,8 +45,68 @@ const addButton = homeworkContainer.querySelector('#add-button');
 // таблица со списком cookie
 const listTable = homeworkContainer.querySelector('#list-table tbody');
 
-filterNameInput.addEventListener('input', function () {});
+function fillTable() {
+  const cookies = document.cookie.split('; ').reduce((prev, current) => {
+    const [name, value] = current.split('=');
+    prev[name] = value;
+    return prev;
+  }, {});
 
-addButton.addEventListener('click', () => {});
+  for (const cookieName in cookies) {
+    if (
+      document.cookie !== '' &&
+      (filterNameInput.value === '' ||
+        cookieName.indexOf(filterNameInput.value) !== -1 ||
+        cookies[cookieName].indexOf(filterNameInput.value) !== -1)
+    ) {
+      const tr = document.createElement('tr');
+      const td_1 = document.createElement('td');
+      td_1.innerHTML = cookieName;
+      const td_2 = document.createElement('td');
+      td_2.innerHTML = cookies[cookieName];
+      const td_3 = document.createElement('td');
+      const deleteButton = document.createElement('button');
+      deleteButton.innerHTML = 'Удалить';
+      td_3.appendChild(deleteButton);
 
-listTable.addEventListener('click', (e) => {});
+      tr.appendChild(td_1);
+      tr.appendChild(td_2);
+      tr.appendChild(td_3);
+
+      listTable.appendChild(tr);
+    }
+  }
+}
+
+function emptyTable() {
+  while (listTable.firstChild) {
+    listTable.removeChild(listTable.firstChild);
+  }
+}
+
+filterNameInput.addEventListener('input', function () {
+  emptyTable();
+  fillTable();
+});
+
+addButton.addEventListener('click', () => {
+  document.cookie = `${addNameInput.value}=${addValueInput.value}`;
+
+  //addNameInput.value = '';
+  //addValueInput.value = '';
+
+  emptyTable();
+  fillTable();
+});
+
+listTable.addEventListener('click', (e) => {
+  if (e.target.innerHTML === 'Удалить') {
+    const name =
+      e.target.parentNode.previousElementSibling.previousElementSibling.innerHTML;
+    const value = e.target.parentNode.previousElementSibling.innerHTML;
+    document.cookie = name + '=' + value + ';expires=Thu, 01 Jan 1970 00:00:01 GMT';
+  }
+
+  emptyTable();
+  fillTable();
+});
